@@ -27,5 +27,8 @@
     "standard": "^2.5.0",
     "tap-spec": "^2.2.1",
     "tape": "^3.5.0"
+  },
+  "dependencies": {
+    "walk": "^2.3.9"
   }
 }

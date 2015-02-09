@@ -11,6 +11,7 @@ var refRe = /^([0-9a-f]{40}) refs\/(.*)$/
 var compareRefs = {}
 
 function findRefHash (refObj, refpath) {
+  if (typeof refObj === 'undefined') return null
   var sref = refpath.split('/')
   var last = refObj
   var err = sref.some(function (n, i) {
