@@ -77,7 +77,7 @@ module.exports = function (root, cb) {
       cb('could not read refs')
     })
 
-    walker.on('end', function () {
+    walker.once('end', function () {
       if (Object.keys(foundRefs).length === 1) return cb('empty git repository')
       readText('HEAD', function (err, data) {
         if (err) return cb('invalid head')
