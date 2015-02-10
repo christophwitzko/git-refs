@@ -4,7 +4,7 @@
 
 var gitRef = require('../')
 
-gitRef('test', function (err, data) {
+gitRef(function (err, data) {
   if (err) return console.error(err)
   var dump = data.dump()
   Object.keys(dump).forEach(function (k) {

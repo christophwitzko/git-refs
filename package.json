@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "finds all references of a git repository",
   "main": "index.js",
+  "bin": {
+    "git-refs": "./bin/git-refs.js"
+  },
   "scripts": {
     "test": "standard && node test | tap-spec",
     "prepublish": "semantic-release pre",
