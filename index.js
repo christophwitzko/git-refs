@@ -3,7 +3,7 @@
 var fs = require('fs')
 var path = require('path')
 
-var PathObject = require('path-object')
+var PathObject = require('path-object')()
 var walk = require('walk')
 
 var hashRe = /^[0-9a-f]{40}$/
@@ -31,7 +31,7 @@ module.exports = function (root, cb) {
     })
   }
 
-  var foundRefs = new PathObject()
+  var foundRefs = new PathObject({HEAD: ''})
 
   readText('packed-refs', function (err, data) {
     if (!err) {
@@ -78,7 +78,7 @@ module.exports = function (root, cb) {
     })
 
     walker.on('end', function () {
-      if (Object.keys(foundRefs).length === 0) return cb('empty git repository')
+      if (Object.keys(foundRefs).length === 1) return cb('empty git repository')
       readText('HEAD', function (err, data) {
         if (err) return cb('invalid head')
         if (hashRe.test(data)) {
