@@ -6,25 +6,13 @@ var test = require('tape')
 
 var gitRefs = require('./')
 
-var refRe = /^([0-9a-f]{40}) refs\/(.*)$/
+var refRe = /^([0-9a-f]{40}) (.*)$/
 
 var compareRefs = {}
 
-function findRefHash (refObj, refpath) {
-  if (typeof refObj === 'undefined') return null
-  var sref = refpath.split('/')
-  var last = refObj
-  var err = sref.some(function (n, i) {
-    if (!n.length) return false
-    if (typeof last[n] === 'undefined') return true
-    last = last[n]
-  })
-  return err ? null : last
-}
-
 test('get git refs', function (t) {
   t.plan(2)
-  exec('git show-ref', function (error, stdout, stderr) {
+  exec('git show-ref --head', function (error, stdout, stderr) {
     t.error(error, 'error')
     stdout.trim().split('\n').forEach(function (line) {
       var pref = refRe.exec(line)
@@ -41,7 +29,7 @@ test('compare refs', function (t) {
   gitRefs(function (err, data) {
     t.error(err, 'error')
     Object.keys(compareRefs).forEach(function (k, i) {
-      t.equal(findRefHash(data, k), compareRefs[k], 'ref ' + (i + 1))
+      t.equal(data.get(/^refs\//.test(k) ? k.substr(5) : k), compareRefs[k], 'ref ' + (i + 1))
     })
   })
 })

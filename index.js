@@ -3,6 +3,7 @@
 var fs = require('fs')
 var path = require('path')
 
+var PathObject = require('path-object')
 var walk = require('walk')
 
 var hashRe = /^[0-9a-f]{40}$/
@@ -30,37 +31,14 @@ module.exports = function (root, cb) {
     })
   }
 
-  var foundRefs = {}
-
-  function insertRefHash (refpath, hash) {
-    var sref = refpath.split('/')
-    var last = foundRefs
-    sref.forEach(function (n, i) {
-      if (!n.length) return
-      if (typeof last === 'object') {
-        last[n] = (sref.length - i > 1) ? (last[n] || {}) : hash
-      }
-      last = last[n]
-    })
-  }
-
-  function findRefHash (refpath) {
-    var sref = refpath.split('/')
-    var last = foundRefs
-    var err = sref.some(function (n, i) {
-      if (!n.length) return false
-      if (typeof last[n] === 'undefined') return true
-      last = last[n]
-    })
-    return err ? null : last
-  }
+  var foundRefs = new PathObject()
 
   readText('packed-refs', function (err, data) {
     if (!err) {
       data.split('\n').forEach(function (line) {
         var pref = prefRe.exec(line)
         if (pref && pref.length > 2) {
-          insertRefHash(pref[2], pref[1])
+          foundRefs.set(pref[2], pref[1])
         }
       })
     }
@@ -71,23 +49,25 @@ module.exports = function (root, cb) {
       readText(path.join('refs', refpath), function (err, data) {
         if (err) return cb('could not read ref')
         if (hashRe.test(data)) {
-          insertRefHash(refpath, data)
+          foundRefs.set(refpath, data)
           return next()
         }
         var ref = refsRe.exec(data)
         if (!ref || !ref.length) return cb('invalid ref')
-        var foundRh = findRefHash(ref[1])
-        if (foundRh) {
-          insertRefHash(refpath, foundRh)
-          return next()
-        }
         readText(ref[1], function (err, data) {
-          if (err) return cb('could not resolve ref')
-          if (hashRe.test(data)) {
-            insertRefHash(refpath, data)
+          if (!err) {
+            if (hashRe.test(data)) {
+              foundRefs.set(refpath, data)
+              return next()
+            }
+            return cb('invalid hash')
+          }
+          var foundRh = foundRefs.get(ref[1])
+          if (foundRh) {
+            foundRefs.set(refpath, foundRh)
             return next()
           }
-          cb('invalid hash')
+          return cb('could not resolve ref')
         })
       })
     })
@@ -98,8 +78,22 @@ module.exports = function (root, cb) {
     })
 
     walker.on('end', function () {
-      if (Object.keys(foundRefs).length > 0) return cb(null, foundRefs)
-      return cb('empty git repository')
+      if (Object.keys(foundRefs).length === 0) return cb('empty git repository')
+      readText('HEAD', function (err, data) {
+        if (err) return cb('invalid head')
+        if (hashRe.test(data)) {
+          foundRefs.set('HEAD', data)
+          return cb(null, foundRefs)
+        }
+        var ref = refsRe.exec(data)
+        if (!ref || !ref.length) return cb('invalid ref')
+        var foundRh = foundRefs.get(ref[1])
+        if (foundRh) {
+          foundRefs.set('HEAD', foundRh)
+          return cb(null, foundRefs)
+        }
+        return cb('could not resolve ref')
+      })
     })
   })
 }
