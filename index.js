@@ -19,7 +19,7 @@ module.exports = function (root, cb) {
   if (typeof cb !== 'function') throw new Error('no callback provided')
 
   try {
-    fs.accessSync(root, fs.R_OK | fs.W_OK)
+    fs.existsSync(root)
   } catch (e) {
     return cb('could not access git directory')
   }
