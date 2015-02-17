@@ -2,9 +2,9 @@
 
 'use strict'
 
-var gitRef = require('../')
+var gitRefs = require('../')
 
-gitRef(function (err, data) {
+gitRefs(function (err, data) {
   if (err) return console.error(err)
   var dump = data.dump()
   Object.keys(dump).forEach(function (k) {
