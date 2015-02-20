@@ -32,7 +32,7 @@
     "tape": "^3.5.0"
   },
   "dependencies": {
-    "path-object": "^2.1.0",
+    "path-object": "^2.3.0",
     "walk": "^2.3.9"
   }
 }
