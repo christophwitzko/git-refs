@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "path-object": "^2.3.0",
+    "slash": "^1.0.0",
     "walk": "^2.3.9"
   }
 }

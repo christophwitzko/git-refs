@@ -4,6 +4,7 @@ var fs = require('fs')
 var path = require('path')
 
 var PathObject = require('path-object')()
+var slash = require('slash')
 var walk = require('walk')
 
 var hashRe = /^[0-9a-f]{40}$/
@@ -46,6 +47,7 @@ module.exports = function (root, cb) {
     var walker = walk.walk(refsRoot, {followLinks: false})
     walker.on('file', function (wroot, fileStat, next) {
       var refpath = path.join(wroot.substr(refsRoot.length), fileStat.name)
+      refpath = slash(refpath)
       readText(path.join('refs', refpath), function (err, data) {
         if (err) return cb('could not read ref')
         if (hashRe.test(data)) {
